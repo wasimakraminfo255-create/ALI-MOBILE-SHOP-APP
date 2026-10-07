@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="ur" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ALI MOBILE SHOP</title>
+<style>
+*{box-sizing:border-box}body{margin:0;font-family:Arial,"Noto Nastaliq Urdu",sans-serif;background:#f4f6fa;color:#172033}
+header{background:#061A4A;color:white;padding:18px 20px;display:flex;justify-content:space-between;align-items:center;gap:10px}
+header h1{margin:0;font-size:23px} header small{opacity:.8}
+nav{display:flex;gap:7px;flex-wrap:wrap;background:#fff;padding:10px;position:sticky;top:0;z-index:5;box-shadow:0 2px 8px #0001}
+button{border:0;border-radius:8px;padding:10px 14px;cursor:pointer;font-weight:bold;background:#123FA3;color:#fff}
+button.secondary{background:#e9edf5;color:#172033}button.danger{background:#b42318}
+main{max-width:1100px;margin:auto;padding:16px}.page{display:none}.page.active{display:block}
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px}.card{background:#fff;padding:16px;border-radius:12px;box-shadow:0 2px 10px #0000000b}.card b{font-size:22px;display:block;margin-top:8px}
+.panel{background:#fff;border-radius:12px;padding:16px;margin-top:14px;box-shadow:0 2px 10px #0000000b}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px}
+input,select{width:100%;padding:11px;border:1px solid #ccd3df;border-radius:8px;background:#fff}
+label{font-size:13px;font-weight:bold;display:block;margin-bottom:5px}
+table{width:100%;border-collapse:collapse;margin-top:12px;background:#fff}th,td{padding:9px;border-bottom:1px solid #e5e7eb;text-align:right;font-size:14px}
+h2{margin-top:4px}.muted{color:#667085}.gold{color:#b58a12}.total{font-size:22px;font-weight:bold}
+.row{display:flex;gap:8px;align-items:end;flex-wrap:wrap}.row>div{flex:1;min-width:140px}
+.notice{background:#fff8df;border-right:4px solid #d4af37;padding:10px;border-radius:8px;margin-top:12px}
+@media(max-width:600px){header h1{font-size:18px}main{padding:10px}th,td{font-size:12px;padding:7px}}
+</style>
+</head>
+<body>
+<header><div><h1>ALI MOBILE SHOP</h1><small>Siddiqui Market, Shop No. 05, Street No. 47, Zakria Town, Multan</small></div><div id="clock"></div></header>
+<nav>
+<button onclick="show('dashboard')">🏠 Dashboard</button>
+<button onclick="show('sale')">🛒 New Sale</button>
+<button onclick="show('stock')">📦 Stock</button>
+<button onclick="show('expenses')">💰 Expenses</button>
+<button onclick="show('reports')">📊 Reports</button>
+</nav>
+<main>
+<section id="dashboard" class="page active">
+<h2>Dashboard</h2>
+<div class="cards">
+<div class="card">آج کی Sale<b id="dSale">Rs. 0</b></div>
+<div class="card">آج کا Profit<b id="dProfit">Rs. 0</b></div>
+<div class="card">آج کے Expenses<b id="dExp">Rs. 0</b></div>
+<div class="card">Stock Items<b id="dStock">0</b></div>
+</div>
+<div class="panel"><h3>Quick Actions</h3><button onclick="show('sale')">+ New Sale</button> <button class="secondary" onclick="show('stock')">+ Add Product</button></div>
+<div class="notice">یہ version offline ہے۔ Data اسی browser/device میں محفوظ ہوتا ہے۔ اہم data کا backup ضرور رکھیں۔</div>
+</section>
+
+<section id="sale" class="page">
+<h2>🛒 New Sale</h2>
+<div class="panel">
+<div class="grid">
+<div><label>Product</label><select id="saleProduct" onchange="saleProductChanged()"></select></div>
+<div><label>Quantity</label><input id="saleQty" type="number" min="1" value="1" oninput="calcSale()"></div>
+<div><label>Discount</label><input id="saleDiscount" type="number" min="0" value="0" oninput="calcSale()"></div>
+<div><label>Payment</label><select id="salePayment"><option>Cash</option><option>Digital</option></select></div>
+</div>
+<p>Price: <b id="salePrice">Rs. 0</b></p>
+<p class="total">Total: <span id="saleTotal">Rs. 0</span></p>
+<button onclick="completeSale()">Save Sale + Invoice</button>
+</div>
+<div class="panel"><h3>Recent Sales</h3><div id="recentSales"></div></div>
+</section>
+
+<section id="stock" class="page">
+<h2>📦 Stock Management</h2>
+<div class="panel">
+<div class="grid">
+<div><label>Product Name</label><input id="pName" placeholder="مثلاً USB Cable"></div>
+<div><label>Item Code</label><input id="pCode" placeholder="USB001"></div>
+<div><label>Purchase Price</label><input id="pBuy" type="number"></div>
+<div><label>Sale Price</label><input id="pSell" type="number"></div>
+<div><label>Quantity</label><input id="pQty" type="number" min="0"></div>
+</div><br><button onclick="addProduct()">Add Product</button>
+</div>
+<div class="panel"><div id="stockTable"></div></div>
+</section>
+
+<section id="expenses" class="page">
+<h2>💰 Expenses</h2>
+<div class="panel">
+<div class="grid">
+<div><label>Expense</label><input id="eName" placeholder="Electricity / Internet / Salary"></div>
+<div><label>Amount</label><input id="eAmount" type="number"></div>
+</div><br><button onclick="addExpense()">Save Expense</button>
+</div>
+<div class="panel"><div id="expenseTable"></div></div>
+</section>
+
+<section id="reports" class="page">
+<h2>📊 Reports</h2>
+<div class="cards">
+<div class="card">Total Sales<b id="rSale">Rs. 0</b></div>
+<div class="card">Gross Profit<b id="rProfit">Rs. 0</b></div>
+<div class="card">Expenses<b id="rExp">Rs. 0</b></div>
+<div class="card">Net Profit<b id="rNet">Rs. 0</b></div>
+</div>
+<div class="panel">
+<button onclick="exportData()">Backup Data</button>
+<button class="secondary" onclick="importData()">Restore Data</button>
+<button class="danger" onclick="resetData()">Reset All Data</button>
+</div>
+</section>
+</main>
+
+<script>
+const KEY='ali_mobile_shop_v1';
+let data=JSON.parse(localStorage.getItem(KEY)||'{"products":[],"sales":[],"expenses":[]}');
+const money=n=>'Rs. '+Number(n||0).toLocaleString('en-PK');
+const today=()=>new Date().toISOString().slice(0,10);
+function save(){localStorage.setItem(KEY,JSON.stringify(data));refresh()}
+function show(id){document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));document.getElementById(id).classList.add('active');refresh()}
+function addProduct(){
+let p={id:Date.now(),name:pName.value.trim(),code:pCode.value.trim(),buy:+pBuy.value||0,sell:+pSell.value||0,qty:+pQty.value||0};
+if(!p.name)return alert('Product name لکھیں');data.products.push(p);['pName','pCode','pBuy','pSell','pQty'].forEach(x=>document.getElementById(x).value='');save();
+}
+function addExpense(){
+let e={id:Date.now(),name:eName.value.trim(),amount:+eAmount.value||0,date:today()};
+if(!e.name||!e.amount)return alert('Expense اور amount درج کریں');data.expenses.push(e);eName.value='';eAmount.value='';save();
+}
+function saleProductChanged(){calcSale()}
+function calcSale(){
+let p=data.products.find(x=>x.id==saleProduct.value);let q=+saleQty.value||0,d=+saleDiscount.value||0;
+salePrice.textContent=money(p?p.sell:0);saleTotal.textContent=money((p?p.sell:0)*q-d);
+}
+function completeSale(){
+let p=data.products.find(x=>x.id==saleProduct.value),q=+saleQty.value||0,d=+saleDiscount.value||0;
+if(!p)return alert('Product select کریں');if(q<1)return alert('Quantity درست کریں');if(p.qty<q)return alert('Stock کم ہے');
+let total=p.sell*q-d;let profit=(p.sell-p.buy)*q-d;
+p.qty-=q;data.sales.unshift({id:Date.now(),date:today(),product:p.name,qty:q,total,profit,payment:salePayment.value});
+save();alert('Sale محفوظ ہوگئی۔ Invoice No: '+data.sales[0].id);show('sale');
+}
+function refresh(){
+let ds=data.sales.filter(x=>x.date===today()),de=data.expenses.filter(x=>x.date===today());
+let ts=ds.reduce((a,x)=>a+x.total,0),tp=ds.reduce((a,x)=>a+x.profit,0),te=de.reduce((a,x)=>a+x.amount,0);
+dSale.textContent=money(ts);dProfit.textContent=money(tp-te);dExp.textContent=money(te);dStock.textContent=data.products.reduce((a,x)=>a+x.qty,0);
+rSale.textContent=money(data.sales.reduce((a,x)=>a+x.total,0));rProfit.textContent=money(data.sales.reduce((a,x)=>a+x.profit,0));rExp.textContent=money(data.expenses.reduce((a,x)=>a+x.amount,0));rNet.textContent=money(data.sales.reduce((a,x)=>a+x.profit,0)-data.expenses.reduce((a,x)=>a+x.amount,0));
+saleProduct.innerHTML='<option value="">Select Product</option>'+data.products.map(p=>`<option value="${p.id}">${p.name} | ${p.code||'-'} | Stock ${p.qty}</option>`).join('');
+stockTable.innerHTML='<table><tr><th>Product</th><th>Code</th><th>Stock</th><th>Buy</th><th>Sale</th><th>Profit</th></tr>'+data.products.map(p=>`<tr><td>${p.name}</td><td>${p.code}</td><td>${p.qty}</td><td>${money(p.buy)}</td><td>${money(p.sell)}</td><td>${money(p.sell-p.buy)}</td></tr>`).join('')+'</table>';
+expenseTable.innerHTML='<table><tr><th>Date</th><th>Expense</th><th>Amount</th></tr>'+data.expenses.slice(0,50).map(e=>`<tr><td>${e.date}</td><td>${e.name}</td><td>${money(e.amount)}</td></tr>`).join('')+'</table>';
+recentSales.innerHTML='<table><tr><th>Date</th><th>Product</th><th>Qty</th><th>Total</th><th>Payment</th></tr>'+data.sales.slice(0,20).map(s=>`<tr><td>${s.date}</td><td>${s.product}</td><td>${s.qty}</td><td>${money(s.total)}</td><td>${s.payment}</td></tr>`).join('')+'</table>';
+calcSale();
+}
+function exportData(){let a=document.createElement('a');a.href='data:application/json;charset=utf-8,'+encodeURIComponent(JSON.stringify(data));a.download='ali-mobile-shop-backup.json';a.click()}
+function importData(){let i=document.createElement('input');i.type='file';i.accept='.json';i.onchange=e=>{let r=new FileReader();r.onload=()=>{try{data=JSON.parse(r.result);save();alert('Backup restored')}catch(_){alert('Invalid backup')}};r.readAsText(e.target.files[0])};i.click()}
+function resetData(){if(confirm('تمام data ختم ہو جائے گا۔ جاری رکھیں؟')){data={products:[],sales:[],expenses:[]};save()}}
+setInterval(()=>clock.textContent=new Date().toLocaleTimeString('en-PK'),1000);refresh();
+</script>
+</body></html>
